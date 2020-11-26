@@ -1,12 +1,26 @@
 class NodeElement(object):
-
     def __init__(self, node):
         self.tool_id = node.attrib['ToolID']
         self.plugin = node.find('GuiSettings').attrib.get('Plugin')
         self.x_pos = float(node.find('GuiSettings').find('Position').attrib['x'])
         self.y_pos = float(node.find('GuiSettings').find('Position').attrib['y'])
         self.tool = self.plugin.split('.')[-1] if self.plugin else None
-
+        
+        #formula plugin
+        if self.plugin == 'AlteryxBasePluginsGui.Formula.Formula':
+            formula_data = node \
+                .find('Properties') \
+                .find('Configuration') \
+                .find('FormulaFields')
+            self.formula_expression =[]
+            for field in formula_data.findall('FormulaField'):
+                self.formula_expression.append(field.attrib['expression'])
+        else:
+            self.formula_expression = None
+            
+        # self.formula_expression = self.formula_expression.replace('\n', ' ') if self.formula_expression else None
+        
+        #join    
         if self.plugin == 'AlteryxBasePluginsGui.Join.Join':
             join_data = node \
                 .find('Properties') \
@@ -23,7 +37,6 @@ class NodeElement(object):
         else:
             self.ljoin_fields = None
             self.rjoin_fields = None
-
         if self.plugin == 'AlteryxGuiToolkit.ToolContainer.ToolContainer':
             self.description = node \
                 .find('Properties') \
@@ -37,7 +50,6 @@ class NodeElement(object):
                     .find('DefaultAnnotationText').text
             except:
                 self.description = None
-
         if self.plugin == 'AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect':
             self.select_fields = node \
                 .find('Properties') \
@@ -47,9 +59,7 @@ class NodeElement(object):
             self.select_fields = [field.attrib for field in self.select_fields]
         else:
             self.select_fields = None
-
         self.description = self.description.replace('\n', ' ') if self.description else None
-
         self.data = {
             'Tool ID': self.tool_id,
             'Plugin': self.plugin,
@@ -59,5 +69,6 @@ class NodeElement(object):
             'y': self.y_pos,
             'Left Join Fields': self.ljoin_fields,
             'Right Join Fields': self.rjoin_fields,
-            'Select Fields': self.select_fields
+            'Select Fields': self.select_fields,
+            'Formula Expression': self.formula_expression
         }
